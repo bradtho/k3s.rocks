@@ -1,0 +1,57 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nginx
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Path(`default-nginx.minotaur-gamma.ts.net`)
+      kind: Rule
+      services:
+        - name: nginx
+          port: 443
+  tls:
+    certResolver: myresolver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  annotations:
+    tailscale.com/expose: "true"
+spec:
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443
+  type: LoadBalancer
+  selector:
+    app: nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 443
+          resources:
+            limits:
+              cpu: 250m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi

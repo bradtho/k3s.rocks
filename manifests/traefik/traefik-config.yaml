@@ -16,3 +16,12 @@ spec:
       kubernetesIngress:
         publishedService:
           enabled: true
+    tls:
+      options:
+        default:
+          alpnProtocols:
+            - h2
+            - http/1.1
+          minVersion: VersionTLS12
+        mintls13: 
+          minVersion: VersionTLS13

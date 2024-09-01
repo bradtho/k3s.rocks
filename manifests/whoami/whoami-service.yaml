@@ -7,6 +7,6 @@ spec:
   ports:
     - name: https
       port: 443
-      targetPort: 443
+      targetPort: 80
   selector:
     app: whoami

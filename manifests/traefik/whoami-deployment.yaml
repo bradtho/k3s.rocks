@@ -16,7 +16,7 @@ spec:
         - name: whoami
           image: traefik/whoami:v1.10.3
           ports:
-            - containerPort: 5678
+            - containerPort: 80
           resources:
             limits:
               cpu: 250m
@@ -32,8 +32,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - name: http
-      port: 443
-      targetPort: 5678
+    - name: https
+      port: 80
+      targetPort: 80
   selector:
     app: whoami

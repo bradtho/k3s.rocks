@@ -1,0 +1,18 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    image:
+      repository: "traefik"
+      tag: "3.1.2"
+    service:
+      loadBalancerClass: tailscale
+    ingressClass:
+      isDefaultClass: false
+    providers:
+      kubernetesIngress:
+        publishedService:
+          enabled: true

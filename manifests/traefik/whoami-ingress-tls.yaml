@@ -6,20 +6,23 @@ metadata:
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: letsencrypt-prod
     external-dns.alpha.kubernetes.io/hostname: whoami.bradthomas.dev
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
   ingressClassName: traefik
   rules:
-  - host: whoami.bradthomas.dev
-    http:
-      paths:
-      - backend:
-          service:
-            name: whoami
-            port:
-              number: 80
-        path: /
-        pathType: Prefix
+    - host: whoami.bradthomas.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name:  whoami
+                port:
+                  name: http
   tls:
-  - hosts:
-    - whoami.bradthomas.dev
-    secretName: whoami.bradthomas.dev
+    - secretName: whoami.bradthomas.dev
+      hosts:
+        - whoami.bradthomas.dev
+      

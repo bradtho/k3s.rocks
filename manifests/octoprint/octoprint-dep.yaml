@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: octoprint
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: octoprint 
+  replicas: 1
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        app: octoprint
+    spec:
+      containers:
+      - name: octoprint
+        image: octoprint/octoprint:1.10.2
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          successThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - ls
+            - /octoprint
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        startupProbe:
+          exec:
+            command:
+            - ls
+            - /octoprint
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          privileged: true
+        ports:
+          - name: http
+            containerPort: 5000
+        volumeMounts:
+        - mountPath: /octoprint
+          name: octoprint
+          readOnly: false
+        - mountPath: /dev/ttyACM0
+          name: ttyacm0
+          readOnly: false
+      nodeSelector:
+        kubernetes.io/hostname: grumpynode2
+      volumes:
+      - name: octoprint
+        persistentVolumeClaim:
+          claimName: octoprint
+      - name: ttyacm0
+        hostPath:
+          path: /dev/ttyACM0
+          type: CharDevice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: octoprint-svc
+  namespace: default
+  labels:
+    app: octoprint
+spec:
+  type: ClusterIP
+  selector:
+    app: octoprint
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: octoprint
+  namespace: default
+  labels:
+    app: octoprint
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: octoprint-svc
+              port:
+                name: http
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+      - octoprint.minotaur-gamma.ts.net
+      secretName: octoprint-tls
